@@ -4,6 +4,8 @@ import (
 	"math"
 )
 
+// XY represents a XY color in CIE color space.
+// This type is adapted to work Philips Hue bulbs color gamut.
 type XY struct {
 	X, Y float32
 	Bri  uint8
@@ -33,7 +35,7 @@ func (c XY) RGBA() (uint32, uint32, uint32, uint32) {
 	return uint32(to16(r)), uint32(to16(g)), uint32(to16(b)), 0xffff
 }
 
-func XYToRGB(x, y, bri float32) (uint8, uint8, uint8) {
+// XYToRGB converts a x, y, bri triple to a RGB triple.
 func XYToRGB(x, y float32, bri uint8) (uint8, uint8, uint8) {
 	if y == 0 {
 		return 0, 0, 0
@@ -55,6 +57,7 @@ func XYToRGB(x, y float32, bri uint8) (uint8, uint8, uint8) {
 	return to8(r), to8(g), to8(b)
 }
 
+// RGBToXY converts a r, g, b triple into a x, y, bri triple.
 func RGBToXY(r, g, b uint8) (float32, float32, uint8) {
 	_r := rgbToXYGamma(float32(r) / 0xff)
 	_g := rgbToXYGamma(float32(g) / 0xff)
