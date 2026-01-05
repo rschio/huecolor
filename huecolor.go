@@ -1,8 +1,11 @@
 package huecolor
 
 import (
+	"image/color"
 	"math"
 )
+
+var XYModel color.Model = color.ModelFunc(xyModel)
 
 // XY represents a XY color in CIE color space.
 // This type is adapted to work Philips Hue bulbs color gamut.
@@ -72,6 +75,31 @@ func RGBToXY(r, g, b uint8) (float32, float32, uint8) {
 	y := Y / (X + Y + Z)
 
 	return x, y, uint8(Y * 254)
+}
+
+func rgb16ToXY(r, g, b uint32) (float32, float32, uint8) {
+	_r := rgbToXYGamma(float32(r) / 0xffff)
+	_g := rgbToXYGamma(float32(g) / 0xffff)
+	_b := rgbToXYGamma(float32(b) / 0xffff)
+
+	// This matrix is the inverse of XYToRGB matrix.
+	X := _r*0.664511594963000 + _g*0.1543237180440 + _b*0.1620284095390
+	Y := _r*0.283881604719000 + _g*0.6684336040750 + _b*0.0476855704228
+	Z := _r*8.81031356321e-05 + _g*0.0723095049022 + _b*0.9860393032600
+
+	x := X / (X + Y + Z)
+	y := Y / (X + Y + Z)
+
+	return x, y, uint8(Y * 254)
+}
+
+func xyModel(c color.Color) color.Color {
+	if _, ok := c.(XY); ok {
+		return c
+	}
+	r, g, b, _ := c.RGBA()
+	x, y, bri := rgb16ToXY(r, g, b)
+	return XY{X: x, Y: y, Bri: bri}
 }
 
 func xyToRGBGamma(c float32) float32 {

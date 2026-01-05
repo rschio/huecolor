@@ -1,12 +1,40 @@
 package huecolor_test
 
 import (
+	"image/color"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/rschio/huecolor"
 )
+
+func TestColorModel(t *testing.T) {
+	c := color.RGBA{R: 20, G: 30, B: 50, A: 200}
+	xy := huecolor.XYModel.Convert(c)
+	rgba := color.RGBAModel.Convert(xy)
+
+	rgb := rgba.(color.RGBA)
+	if !aprox(rgb.R, c.R) {
+		t.Errorf("wrong R")
+	}
+	if !aprox(rgb.G, c.G) {
+		t.Error("wrong G")
+	}
+	if !aprox(rgb.B, c.B) {
+		t.Error("wrong B")
+	}
+
+}
+
+func aprox(a, b uint8) bool {
+	v := int(a) - int(b)
+	v = max(v, -v)
+	if v < 2 {
+		return true
+	}
+	return false
+}
 
 func TestXY(t *testing.T) {
 	x0, y0, bri0 := float32(0.4962), float32(0.4151), uint8(143)
